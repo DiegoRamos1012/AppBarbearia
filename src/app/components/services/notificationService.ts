@@ -30,7 +30,7 @@ Notifications.setNotificationHandler({
  * @returns Token de push notification
  */
 export async function registerForPushNotifications(userId: string) {
-  let token;
+  let token: string;
 
   if (Platform.OS === "android") {
     await Notifications.setNotificationChannelAsync("default", {
@@ -225,6 +225,12 @@ export async function sendPushNotification(
   data?: any
 ) {
   try {
+    // Validar token
+    if (!expoPushToken || !expoPushToken.includes("ExponentPushToken")) {
+      console.warn("Token inválido:", expoPushToken);
+      return false;
+    }
+
     const message = {
       to: expoPushToken,
       sound: "default",
@@ -259,3 +265,22 @@ export async function sendPushNotification(
   }
 }
 
+// Adicionar função para agendamento local (útil para lembretes de agendamentos)
+export async function scheduleLocalNotification(
+  title: string,
+  body: string,
+  scheduledTime: Date,
+  data?: any
+) {
+  return await Notifications.scheduleNotificationAsync({
+    content: {
+      title,
+      body,
+      data: data || {},
+    },
+    trigger: {
+      type: Notifications.SchedulableTriggerInputTypes.DATE,
+      date: scheduledTime,
+    },
+  });
+}
